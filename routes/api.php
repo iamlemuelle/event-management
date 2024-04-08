@@ -22,4 +22,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::apiResource('events', EventController::class);
 Route::apiResource('events.attendees', AttendeeController::class)
-    ->scoped(['attendee' => 'event']); #scoped means that attendee resources is always part of an event
+    ->scoped()->except(['update']); #scoped means that attendee resources is always part of an event
