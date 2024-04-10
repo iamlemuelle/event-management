@@ -14,14 +14,36 @@ class EventController extends Controller
      */
     public function index()
     {
+        $query = Event::query();
+        $relations = ['user', 'attendees', 'attendee.user']; #define an array
+
+        foreach($relations as $relation)
+        {
+            $query->when(
+                $this->shouldIncludeRelation($relation),
+                fn($q) => $q->with($relation)
+            );
+        }
+
         return EventResource::collection(
-            Event::with('user')->paginate()
+            $query->latest()->paginate()
         );
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    protected function shouldIncludeRelation(string $relation): bool
+    {
+        $include = request()->query('include');
+
+        if(!$include)
+        {
+            return false;
+        }
+
+        $relations = array_map('trim', explode(',', $include)); #array_map will call a specific function that will remove all the starting and ending spaces from any string because of the trim
+
+        return in_array($relation, $relations);
+    }
+
     public function store(Request $request)
     {
         $event = Event::create([
